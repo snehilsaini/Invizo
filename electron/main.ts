@@ -10,6 +10,7 @@ import { configHelper } from "./ConfigHelper"
 import * as dotenv from "dotenv"
 
 let deeplinkUrl: string | null = null;
+let pendingTokens: { access_token: string, refresh_token: string } | null = null;
 
 // Constants
 const isDev = process.env.NODE_ENV === "development"
@@ -163,10 +164,20 @@ function handleAuthCallback(url: string) {
 // Helper to send tokens to renderer
 function sendTokensToRenderer(access_token: string, refresh_token: string) {
   console.log("Sending tokens to renderer:", access_token, refresh_token);
+  // if (state.mainWindow) {
+  //   state.mainWindow.webContents.send("auth-tokens", { access_token, refresh_token });
+  //   // Optionally, focus the window
+  //   state.mainWindow.focus();
+  // }
+
   if (state.mainWindow) {
     state.mainWindow.webContents.send("auth-tokens", { access_token, refresh_token });
-    // Optionally, focus the window
     state.mainWindow.focus();
+    pendingTokens = null; // Clear after sending
+  } else {
+    // Store for later
+    pendingTokens = { access_token, refresh_token };
+    console.log("Main window not ready, storing tokens for later.");
   }
 }
 
@@ -431,6 +442,13 @@ async function createWindow(): Promise<void> {
     console.log(`Setting initial opacity to ${savedOpacity}`);
     state.mainWindow.setOpacity(savedOpacity);
     state.isWindowVisible = true;
+  }
+
+  if (pendingTokens) {
+    state.mainWindow.webContents.send("auth-tokens", pendingTokens);
+    state.mainWindow.focus();
+    pendingTokens = null;
+    console.log("Sent pending tokens to renderer after window creation.");
   }
   // state.mainWindow.setIgnoreMouseEvents(true, { forward: true });
 }
