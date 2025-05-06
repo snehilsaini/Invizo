@@ -672,6 +672,12 @@ app.on("open-url", (event, url) => {
 // Handle second instance (removed auth callback handling)
 app.on("second-instance", (event, commandLine) => {
   console.log("second-instance event received:", commandLine)
+
+  const url = commandLine.find(arg => arg.startsWith("interview-coder://"));
+  if (url) {
+    deeplinkUrl = url;
+    handleAuthCallback(url);
+  }
   
   // Focus or create the main window
   if (!state.mainWindow) {
