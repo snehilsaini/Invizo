@@ -116,7 +116,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleExternalLogin = () => {
-    window.electronAPI.openExternal("https://invisible-assistant.vercel.app/");
+    // window.electronAPI.openExternal("https://invisible-assistant.vercel.app/");
+    window.electronAPI.openExternal("https://invizo.dev/?electron=1");
   };
 
   const handleCheckLogin = async () => {

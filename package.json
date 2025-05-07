@@ -92,9 +92,9 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "ibttf",
-        "repo": "interview-coder",
-        "private": false,
+        "owner": "snehilsaini",
+        "repo": "Invizo",
+        "private": true,
         "releaseType": "release"
       }
     ],
