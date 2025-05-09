@@ -1,3 +1,5 @@
+console.log("Preload: preload script loaded");
+
 console.log("Preload script starting...")
 import { contextBridge, ipcRenderer } from "electron"
 const { shell } = require("electron")
@@ -183,7 +185,12 @@ const electronAPI = {
     }
   },
   startUpdate: () => ipcRenderer.invoke("start-update"),
-  installUpdate: () => ipcRenderer.invoke("install-update"),
+  // installUpdate: () => ipcRenderer.invoke("install-update"),
+  installUpdate: () => {
+    console.log("Preload: installUpdate called");
+    return ipcRenderer.invoke("install-update");
+  },
+  // installUpdate: () => ipcRenderer.send("install-update"),
   onUpdateAvailable: (callback: (info: any) => void) => {
     const subscription = (_: any, info: any) => callback(info)
     ipcRenderer.on("update-available", subscription)

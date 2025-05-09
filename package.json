@@ -1,6 +1,6 @@
 {
   "name": "interview-coder-v1",
-  "version": "1.0.21",
+  "version": "1.0.32",
   "main": "./dist-electron/main.js",
   "scripts": {
     "clean": "npx rimraf dist dist-electron",
@@ -94,7 +94,7 @@
         "provider": "github",
         "owner": "snehilsaini",
         "repo": "Invizo",
-        "private": true,
+        "private": false,
         "releaseType": "release"
       }
     ],

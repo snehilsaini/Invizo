@@ -1,3 +1,5 @@
+console.log("Main: main.ts started");
+
 import { app, BrowserWindow, screen, shell, ipcMain } from "electron"
 import path from "path"
 import fs from "fs"
@@ -8,6 +10,27 @@ import { ShortcutsHelper } from "./shortcuts"
 import { initAutoUpdater } from "./autoUpdater"
 import { configHelper } from "./ConfigHelper"
 import * as dotenv from "dotenv"
+
+
+// ✅ Set custom paths BEFORE app is used by autoUpdater or anything else
+const appDataPath = path.join(app.getPath('appData'), 'interview-coder-v1')
+const sessionPath = path.join(appDataPath, 'session')
+const tempPath = path.join(appDataPath, 'temp')
+const cachePath = path.join(appDataPath, 'cache')
+
+// Create directories if they don't exist
+for (const dir of [appDataPath, sessionPath, tempPath, cachePath]) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+}
+
+// Set Electron paths early!
+app.setPath('userData', appDataPath)
+app.setPath('sessionData', sessionPath)
+app.setPath('temp', tempPath)
+app.setPath('cache', cachePath)
+
 
 let deeplinkUrl: string | null = null;
 let pendingTokens: { access_token: string, refresh_token: string } | null = null;
@@ -594,22 +617,22 @@ function loadEnvVariables() {
 async function initializeApp() {
   try {
     // Set custom cache directory to prevent permission issues
-    const appDataPath = path.join(app.getPath('appData'), 'interview-coder-v1')
-    const sessionPath = path.join(appDataPath, 'session')
-    const tempPath = path.join(appDataPath, 'temp')
-    const cachePath = path.join(appDataPath, 'cache')
+    // const appDataPath = path.join(app.getPath('appData'), 'interview-coder-v1')
+    // const sessionPath = path.join(appDataPath, 'session')
+    // const tempPath = path.join(appDataPath, 'temp')
+    // const cachePath = path.join(appDataPath, 'cache')
     
-    // Create directories if they don't exist
-    for (const dir of [appDataPath, sessionPath, tempPath, cachePath]) {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
-      }
-    }
+    // // Create directories if they don't exist
+    // for (const dir of [appDataPath, sessionPath, tempPath, cachePath]) {
+    //   if (!fs.existsSync(dir)) {
+    //     fs.mkdirSync(dir, { recursive: true })
+    //   }
+    // }
     
-    app.setPath('userData', appDataPath)
-    app.setPath('sessionData', sessionPath)      
-    app.setPath('temp', tempPath)
-    app.setPath('cache', cachePath)
+    // app.setPath('userData', appDataPath)
+    // app.setPath('sessionData', sessionPath)      
+    // app.setPath('temp', tempPath)
+    // app.setPath('cache', cachePath)
       
     loadEnvVariables()
     
@@ -650,8 +673,11 @@ async function initializeApp() {
     await createWindow()
     state.shortcutsHelper?.registerGlobalShortcuts()
 
+
     // Initialize auto-updater regardless of environment
+    console.log("Main: About to call initAutoUpdater()");
     initAutoUpdater()
+    console.log("Main: Called initAutoUpdater()");
     console.log(
       "Auto-updater initialized in",
       isDev ? "development" : "production",

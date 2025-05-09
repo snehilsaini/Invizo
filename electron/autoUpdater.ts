@@ -1,9 +1,47 @@
 import { autoUpdater } from "electron-updater"
 import { BrowserWindow, ipcMain, app } from "electron"
 import log from "electron-log"
+import fs from "fs";
+import path from "path";
 
 export function initAutoUpdater() {
+
+  console.log("Main: initAutoUpdater called");
+
+
+  // Log app path and permissions
+console.log("App path:", app.getAppPath());
+console.log("App is packaged:", app.isPackaged);
+console.log("App userData path:", app.getPath('userData'));
+console.log("App running as user:", process.env.USER || process.env.LOGNAME);
+
+
   console.log("Initializing auto-updater...")
+
+  // Listen for all autoUpdater events
+// autoUpdater.on("before-quit-for-update", () => {
+//   console.log("autoUpdater: before-quit-for-update event fired");
+// });
+
+
+autoUpdater.on("error", (err) => {
+  console.error("autoUpdater: error event:", err);
+});
+
+// Listen for app lifecycle events
+app.on("before-quit", (event) => {
+  console.log("app: before-quit event");
+});
+app.on("will-quit", (event) => {
+  console.log("app: will-quit event");
+});
+app.on("quit", (event, exitCode) => {
+  console.log("app: quit event, exitCode:", exitCode);
+});
+
+// app.on("before-quit-for-update", () => {
+//   console.log("app: before-quit-for-update event fired");
+// });
 
   // Skip update checks in development
   if (!app.isPackaged) {
@@ -11,10 +49,10 @@ export function initAutoUpdater() {
     return
   }
 
-  if (!process.env.GH_TOKEN) {
-    console.error("GH_TOKEN environment variable is not set")
-    return
-  }
+  // if (!process.env.GH_TOKEN) {
+  //   console.error("GH_TOKEN environment variable is not set")
+  //   return
+  // }
 
   // Configure auto updater
   autoUpdater.autoDownload = true
@@ -102,8 +140,26 @@ export function initAutoUpdater() {
     }
   })
 
+  // ipcMain.handle("install-update", () => {
+  //   console.log("Install update requested")
+  //   autoUpdater.quitAndInstall();
+  // })
+
   ipcMain.handle("install-update", () => {
-    console.log("Install update requested")
-    autoUpdater.quitAndInstall()
-  })
+    console.log("Main: install-update IPC handler called");
+    console.log("Install update requested");
+    try {
+      console.log("Calling autoUpdater.quitAndInstall()");
+      autoUpdater.quitAndInstall();
+      console.log("Called autoUpdater.quitAndInstall()");
+    } catch (err) {
+      console.error("Error calling quitAndInstall:", err);
+    }
+    // As a fallback, try a manual restart (for debugging)
+    setTimeout(() => {
+      console.log("Fallback: trying app.relaunch() and app.quit()");
+      app.relaunch();
+      app.quit();
+    }, 5000); // Wait 5 seconds to see if quitAndInstall works first
+  });
 }
